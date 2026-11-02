@@ -16,6 +16,7 @@ class ExecuteFile(private val file: File) : Callable<Nothing> {
 
     private val errorList = mutableListOf<String>()
     private var errorCount = 0
+    private var skipCount = 0
     private val fileName = file.nameWithoutExtension
     private val tableCode = fileName at tableList
     private val shpOnlyTable =
@@ -72,6 +73,11 @@ class ExecuteFile(private val file: File) : Callable<Nothing> {
                     }
                     features.forEach feature@{ feature ->
                         val ftrIdn = setupFtrIdn(feature!!)
+                        if (ftrIdn == "0") {
+                            // 백업 대상에서 제외하고 건수만 집계하여 history log 표출
+                            skipCount++
+                            return@feature
+                        }
                         val resultSet: ResultSet
                         try {
                             val selectQuery = setupQuery(
@@ -125,7 +131,8 @@ class ExecuteFile(private val file: File) : Callable<Nothing> {
                     pConnection.reportResults(
                         fileName = fileName,
                         rowCount = features.size,
-                        errorCount = errorCount
+                        errorCount = errorCount,
+                        skipCount = skipCount
                     )
                 }
             }

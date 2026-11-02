@@ -83,18 +83,19 @@ fun selectFtrIdn(message: String): Int {
     return if (matchResult !== null) matchResult.toInt() else 0
 }
 
-fun Connection.reportResults(fileName: String, rowCount: Int, errorCount: Int) {
+fun Connection.reportResults(fileName: String, rowCount: Int, errorCount: Int, skipCount: Int = 0) {
     val paddedFileName = fileName.padEnd(8 - fileName.length)
     val validCount = (rowCount - errorCount).toString().padEnd(4)
     val invalidCount = errorCount.toString().padEnd(2)
+    val skipMessage = if (skipCount > 0) " (\"FTR_IDN=0\" 제외 $skipCount 건)" else ""
     when (errorCount) {
         0 -> {
-            println("${Config.local} 정상 완료: $paddedFileName")
-            logger.info("$paddedFileName $validCount 건")
+            println("${Config.local} 정상 완료: $paddedFileName$skipMessage")
+            logger.info("$paddedFileName $validCount 건$skipMessage")
         }
         in 1 until rowCount -> {
             println("${Config.local} 일부 에러: $paddedFileName (오류 $errorCount 건)")
-            logger.info("$paddedFileName $validCount 건 → 오류 $invalidCount 건")
+            logger.info("$paddedFileName $validCount 건 → 오류 $invalidCount 건$skipMessage")
         }
         else -> {
             this.rollback()
