@@ -24,6 +24,7 @@ class ExecuteFile(private val file: File) : Callable<Nothing> {
             "swl_cap_ps", // 하수관말
             "swl_hmpipe_ls", // 가정내오수관 (임의 테이블명)
             "swl_pipe_as", // 면형관
+            "swl_dran_as", // 하수처리장면형
             "wtl_cap_ps", // 상수관말
             "wtl_pipe_dir_ps", // 물방향
             "wtl_prme_ps", // 수압측정
@@ -32,7 +33,14 @@ class ExecuteFile(private val file: File) : Callable<Nothing> {
             "wtl_userlabel_ps", // 사용자주기 (임의 테이블명)
             "wtl_wspipe_ls", // 수자원광역관 (임의 테이블명)
             "bml_badm_as", // 법정동경계
-            "bml_hadm_as" // 행정동경계
+            "bml_hadm_as", // 행정동경계
+            "wtl_wq_ps", // 수질계측기
+            "wtl_ad_ps", //자동드레인
+            "wtl_df_ps", //정밀여과장치
+            "wtl_gain_pss",
+            "wtl_fs_ps", //관세척
+            "wtl_sdfs_ps",//새들형관세척
+//            "wtl_gain_ps"
         )
 
     @Throws(Throwable::class)
