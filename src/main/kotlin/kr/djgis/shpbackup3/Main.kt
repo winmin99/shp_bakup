@@ -12,7 +12,6 @@ import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 val logger: Logger = LoggerFactory.getLogger("kr.djgis.shpbackup3.MainKt")
 lateinit var shpFiles: Array<File>
@@ -42,7 +41,10 @@ private fun setupProperties() {
 private fun runExecutor() {
     val tasks: MutableCollection<Callable<Nothing>> = ArrayList(shpFiles.size)
     shpFiles.forEach { file ->
-        tasks.add(ExecuteFile(file))
+        val fileName = file.nameWithoutExtension
+        if (fileName != "급수구역" && fileName != "급수분구" && fileName != "급수블럭") {
+            tasks.add(ExecuteFile(file))
+        }
     }
     val executor = Executors.newFixedThreadPool(shpFiles.size)
     executor.invokeAll(tasks)
