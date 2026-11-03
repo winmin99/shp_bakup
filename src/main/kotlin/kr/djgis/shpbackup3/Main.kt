@@ -11,6 +11,7 @@ import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.system.exitProcess
 
 val logger: Logger = LoggerFactory.getLogger("kr.djgis.shpbackup3.MainKt")
 lateinit var shpFiles: Array<File>
@@ -21,12 +22,22 @@ private val excludedNames = setOf("급수구역", "급수분구", "급수블럭"
 
 fun main() {
     println("${Config.local} 작업 시작: ${Date()}")
+    var failed = false
     try {
         setupProperties()
         runExecutor()
     } catch (e: Exception) {
+        failed = true
         logger.error(e.message)
+        println("${Config.local} 작업 중단: ${e.message ?: e.javaClass.simpleName}")
+    } finally {
+        println("${Config.local} 백업 종료")
+        logger.info("——————END——————\n")
+        logger.error("——————END——————\n")
+        Status.tableCodeSet.clear()
     }
+    // exitProcess 는 finally 를 건너뛰므로 정리 작업 이후에 호출
+    if (failed) exitProcess(1)
 }
 
 private fun setupProperties() {
@@ -63,10 +74,5 @@ private fun runExecutor() {
         }
     } catch (e: InterruptedException) {
         executor.shutdownNow()
-    } finally {
-        println("${Config.local} 백업 종료")
-        logger.info("——————END——————\n")
-        logger.error("——————END——————\n")
-        Status.tableCodeSet.clear()
     }
 }
