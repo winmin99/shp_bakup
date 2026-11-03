@@ -6,9 +6,8 @@ import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.util.*
 
-private val properties = Properties()
-
 fun initPropertyFile(filePath: String): Properties {
+    val properties = Properties()
     try {
         FileInputStream(filePath).use {
             properties.load(BufferedReader(InputStreamReader(it, "UTF-8")))
