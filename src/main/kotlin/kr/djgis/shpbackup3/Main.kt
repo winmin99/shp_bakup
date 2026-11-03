@@ -30,9 +30,9 @@ fun main() {
 private fun setupProperties() {
     tableList = initPropertyFile("./table.properties")
     shpFiles = File(Config.filePath).listFiles { file ->
-        file.name.endsWith("shp") && (file.nameWithoutExtension at tableList != "") && (file.length() > 100L)
-    }!!
-    if (shpFiles.isNullOrEmpty()) {
+        file.extension.equals("shp", ignoreCase = true) && (file.nameWithoutExtension at tableList != "") && (file.length() > 100L)
+    } ?: emptyArray()
+    if (shpFiles.isEmpty()) {
         throw FileNotFoundException("${Config.local} 백업 대상 .shp 파일이 없음 (지정 폴더위치: ${Config.filePath})")
     }
 }
