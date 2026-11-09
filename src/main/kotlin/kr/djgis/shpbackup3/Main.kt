@@ -42,19 +42,27 @@ fun main() {
 
 private fun setupProperties() {
     tableList = initPropertyFile("./table.properties")
+    // 테이블 목록에 없는 shp 파일명을 모아서 한번에 보고
+    val unmappedNames = mutableListOf<String>()
     shpFiles = File(Config.filePath).listFiles { file ->
         // 확장자 shp 인 파일만 선택, 대소문자 구분X
         //   (제외 대상은 테이블 매핑이 없어도 되므로 매핑 검증보다 먼저 걸러냄)
         val isShp = file.extension.equals("shp", ignoreCase = true) && file.nameWithoutExtension !in excludedNames
         // shp 파일명이 테이블 목록에 키로 등록되어 있는지 확인
-        //   (매핑 누락은 설정 오류이므로 백업 시작 전에 예외로 즉시 중단)
+        //   (매핑 누락은 설정 오류이므로 목록만 수집하고, 필터링 후 백업 시작 전에 예외로 중단)
         if (isShp && tableList.getProperty(file.nameWithoutExtension).isNullOrEmpty()) {
-            throw IllegalStateException("테이블 목록에 없는 shp 파일: ${file.name}")
+            unmappedNames.add(file.name)
         }
         // 조건 3: shp 파일 크기가 100 byte를 넘는지 확인
         //        (shp 파일 헤더 100byte, 헤더만 있는 파일은 도형 없는 파일이므로 제외)
         isShp && file.length() > 100L
     } ?: emptyArray()
+    if (unmappedNames.isNotEmpty()) {
+        throw IllegalStateException(
+            "테이블 목록에 없는 shp 파일 ${unmappedNames.size}개:\n" +
+                unmappedNames.sorted().joinToString("\n") { " - $it" }
+        )
+    }
     if (shpFiles.isEmpty()) {
         throw FileNotFoundException("${Config.local} 백업 대상 .shp 파일이 없음 (지정 폴더위치: ${Config.filePath})")
     }
