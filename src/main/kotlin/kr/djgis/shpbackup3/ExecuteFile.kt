@@ -3,7 +3,6 @@ package kr.djgis.shpbackup3
 import kr.djgis.shpbackup3.network.MysqlConnectionPool
 import kr.djgis.shpbackup3.network.PostgresConnectionPool
 import kr.djgis.shpbackup3.property.Config
-import kr.djgis.shpbackup3.property.Status
 import kr.djgis.shpbackup3.property.at
 import org.opengis.feature.simple.SimpleFeature
 import org.postgresql.util.PSQLException
@@ -67,10 +66,6 @@ class ExecuteFile(private val file: File) : Callable<Nothing> {
                     }
                     val columnList = columnNames.joinToString(",").toLowerCase().trim()
 //                    val columnList = columnNames.joinToString(",").toUpperCase().trim()
-                    if (Status.tableCodeSet.add(tableCode)) {
-                        pStmt.execute("TRUNCATE TABLE $tableCode")
-//                        pStmt.execute("SELECT SETVAL('public.${tableCode}_id_seq',1,false)")
-                    }
                     features.forEach feature@{ feature ->
                         val ftrIdn = setupFtrIdn(feature!!)
                         if (ftrIdn == "0") {

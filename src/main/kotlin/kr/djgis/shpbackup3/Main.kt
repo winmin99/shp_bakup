@@ -1,7 +1,8 @@
 package kr.djgis.shpbackup3
 
+import kr.djgis.shpbackup3.network.PostgresConnectionPool
 import kr.djgis.shpbackup3.property.Config
-import kr.djgis.shpbackup3.property.Status
+import kr.djgis.shpbackup3.property.at
 import kr.djgis.shpbackup3.property.initPropertyFile
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -25,6 +26,7 @@ fun main() {
     var failed = false
     try {
         setupProperties()
+        truncateAllTables()
         runExecutor()
     } catch (e: Exception) {
         failed = true
@@ -34,10 +36,23 @@ fun main() {
         println("${Config.local} 백업 종료")
         logger.info("——————END——————\n")
         logger.error("——————END——————\n")
-        Status.tableCodeSet.clear()
     }
     // exitProcess 는 finally 를 건너뛰므로 정리 작업 이후에 호출
     if (failed) exitProcess(1)
+}
+
+private fun truncateAllTables() {
+    val tableCodes = shpFiles.map { it.nameWithoutExtension at tableList }.toSet()
+    val pConn = PostgresConnectionPool.getConnection()
+    pConn.open(true) { pConnection ->
+        pConnection.createStatement().use { pStmt ->
+            tableCodes.forEach { tableCode ->
+                pStmt.execute("TRUNCATE TABLE $tableCode")
+            }
+            pConnection.commit()
+        }
+    }
+    println("${Config.local} TRUNCATE 완료: ${tableCodes.size}개 테이블")
 }
 
 private fun setupProperties() {
@@ -60,7 +75,7 @@ private fun setupProperties() {
     if (unmappedNames.isNotEmpty()) {
         throw IllegalStateException(
             "테이블 목록에 없는 shp 파일 ${unmappedNames.size}개:\n" +
-                unmappedNames.sorted().joinToString("\n") { " - $it" }
+                    unmappedNames.sorted().joinToString("\n") { " - $it" }
         )
     }
     if (shpFiles.isEmpty()) {
